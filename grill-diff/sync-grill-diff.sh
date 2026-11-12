@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sync grill-diff plus its deterministic helper to all local agent installs.
+# Sync grill-diff plus its deterministic helper to local agent installs.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -43,20 +43,34 @@ sync_skills_dir() {
   echo "✓ synced  $destination"
 }
 
-for root in "$HOME/.agents" "$HOME/.claude" "$HOME/.codex" \
-  "$HOME/.config/opencode" "$HOME/.config/muse" "$HOME/.cursor" \
-  "$HOME/.gemini/config" "$HOME/.pi/agent" "$HOME/.zcode" "$HOME/.kimicode"; do
+PRIMARY_ROOTS=("$HOME/.claude" "$HOME/.codex" "$HOME/.cursor")
+OPTIONAL_ROOTS=(
+  "$HOME/.agents"
+  "$HOME/.config/opencode"
+  "$HOME/.config/muse"
+  "$HOME/.gemini/config"
+  "$HOME/.pi/agent"
+  "$HOME/.zcode"
+  "$HOME/.kimicode"
+)
+for root in "${PRIMARY_ROOTS[@]}"; do
   sync_skills_dir "$root/skills"
 done
+for root in "${OPTIONAL_ROOTS[@]}"; do
+  if [ -d "$root" ]; then
+    sync_skills_dir "$root/skills"
+  fi
+done
 
-# Include real project-scoped agent installs, but never temporary plugin/cache roots
-# or this repo's own sources.
+# Include real project-scoped agent installs, pruning macOS TCC-protected folders,
+# node_modules, temporary/cache directories, and this repo's own sources.
 while IFS= read -r skills_dir; do
   sync_skills_dir "$skills_dir"
-done < <(find "$HOME" -mindepth 3 -maxdepth 6 -type d -path '*/.agents/skills' \
-  ! -path "$HOME/.*" ! -path '*/.tmp/*' ! -path '*/cache/*' ! -path '*backup*' \
-  ! -path "$(dirname "$SCRIPT_DIR")/*" \
-  -print 2>/dev/null)
+done < <(find "$HOME" -maxdepth 6 \
+  \( -path "$HOME/Library" -o -path "$HOME/Desktop" -o -path "$HOME/Documents" \
+     -o -path "$HOME/Downloads" -o -path "$HOME/.*" -o -path '*/node_modules' \
+     -o -path '*/.tmp' -o -path '*/cache' -o -path "$(dirname "$SCRIPT_DIR")" \) -prune \
+  -o -type d -path '*/.agents/skills' ! -path "$HOME/.agents/skills" ! -path '*backup*' -print 2>/dev/null)
 
 # Cursor consumes an .mdc rule. Its helper fallback is shared by all rules.
 CURSOR_RULES_DIR="${CURSOR_RULES_DIR:-$HOME/.cursor/rules}"

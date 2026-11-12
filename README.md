@@ -17,7 +17,7 @@ Single-pass LLM code reviews routinely skip large hunks, hallucinate false posit
 | [`grill-review/scripts/`](grill-review/scripts/) | Shared deterministic state engine (`grill-review.py`, `grill_review_ingest.py`, `grill_review_engine.py`, `grill_review_returns.py`, `grill_review_validation.py`) |
 | [`grill-diff/`](grill-diff/) | Correctness, specification-alignment, and edge-case review skill across diffs, branches, PRs, or explicit file sets |
 | [`grill-yagni/`](grill-yagni/) | Over-engineering & YAGNI review skill surfacing code or prose removable without changing requested behavior |
-| [`grill-review/tests/`](grill-review/tests/) | **54 unit & contract tests** verifying ingest boundaries, checked return invariants, validation routing, and skill sync |
+| [`grill-review/tests/`](grill-review/tests/) | **55 unit & contract tests** verifying ingest boundaries, checked return invariants, validation routing, and skill sync |
 
 ---
 

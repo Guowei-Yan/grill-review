@@ -13,6 +13,16 @@ HELPERS = (
     "grill_review_validation.py",
     "grill_review_returns.py",
 )
+PRIMARY_ROOTS = (".claude", ".codex", ".cursor")
+OPTIONAL_ROOTS = (
+    ".agents",
+    ".config/opencode",
+    ".config/muse",
+    ".gemini/config",
+    ".pi/agent",
+    ".zcode",
+    ".kimicode",
+)
 
 
 class SyncTests(unittest.TestCase):
@@ -40,20 +50,35 @@ class SyncTests(unittest.TestCase):
                 (installed / "scripts" / helper).read_bytes(),
             )
 
-    def test_each_sync_installs_skill_and_helper_everywhere(self):
+    def test_sync_only_creates_primary_roots_on_clean_home(self):
         for skill in ("grill-diff", "grill-yagni"):
             with self.subTest(skill=skill), tempfile.TemporaryDirectory() as tmp:
                 home = Path(tmp)
+                self.run_sync(skill, home)
+                for root in PRIMARY_ROOTS:
+                    self.assert_install(home, root, skill)
+                for root in OPTIONAL_ROOTS:
+                    self.assertFalse((home / root).exists())
+
+    def test_each_sync_installs_skill_and_helper_across_existing_roots(self):
+        for skill in ("grill-diff", "grill-yagni"):
+            with self.subTest(skill=skill), tempfile.TemporaryDirectory() as tmp:
+                home = Path(tmp)
+                for opt in OPTIONAL_ROOTS:
+                    (home / opt).mkdir(parents=True)
                 (home / "project" / ".agents" / "skills").mkdir(parents=True)
+                (home / "Library" / "proj" / ".agents" / "skills").mkdir(parents=True)
+                (home / "project" / "node_modules" / "pkg" / ".agents" / "skills").mkdir(parents=True)
                 cache = home / ".codex" / ".tmp" / "plugins" / ".agents" / "skills"
                 cache.mkdir(parents=True)
                 self.run_sync(skill, home)
-                for root in (
-                        ".agents", ".claude", ".codex", ".config/opencode",
-                        ".config/muse", ".cursor", ".gemini/config", ".pi/agent", ".zcode",
-                        "project/.agents"):
+                for root in (*PRIMARY_ROOTS, *OPTIONAL_ROOTS, "project/.agents"):
                     self.assert_install(home, root, skill)
                 self.assertFalse((cache / skill).exists())
+                self.assertFalse((home / "Library" / "proj" / ".agents" / "skills" / skill).exists())
+                self.assertFalse(
+                    (home / "project" / "node_modules" / "pkg" / ".agents" / "skills" / skill).exists()
+                )
                 cursor_rule = home / ".cursor" / "rules" / f"{skill}.mdc"
                 self.assertTrue(cursor_rule.is_file())
                 for helper in HELPERS:
