@@ -241,7 +241,7 @@ and never infer decisions.
 
 ## Reporting and cleanup
 
-Report only validated cuts in ponytail format:
+Report only validated cuts in concise cut-ledger format:
 
 ```text
 <file>:L<lines>: <tag>: <what to cut>. <what replaces it>.

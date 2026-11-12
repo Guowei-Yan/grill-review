@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Guowei-Yan/grill-review/actions/workflows/ci.yml/badge.svg)](https://github.com/Guowei-Yan/grill-review/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](#)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
 
 Deterministic multi-pass coverage ledger and candidate-validation engine for exhaustive diff, pull-request, and whole-file code reviews (**zero third-party runtime dependencies**).
 
